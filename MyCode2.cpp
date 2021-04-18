@@ -65,6 +65,30 @@ void llDiv(string result_var, string value1, string value2){
 	outfile << "    " << result_var << " = sdiv i32 " << value1 << ", " << value2 << endl;
 }
 
+void llDiv(string result_var, string value1, string value2){
+	outfile << "    " << result_var << " = sdiv i32 " << value1 << ", " << value2 << endl;
+}
+
+// Type cast an i1 variable to i32 variable in llvm. 0 becomes. 1 becomes -1.
+void llTypeCast(string result, string var_bool){
+	out << "	" << result << " = sext i1 " << var_bool << " to i32";
+}
+
+
+void llComp(string result, string var1, string var2){
+	out << "	" << result <<  "= icmp eq i32" <<  var1 << ", " <<  var2;
+}
+
+// reutrns (var1 > var2)
+void llGreater(string result, string var1, string var2){
+	out << "	" << result <<  "= icmp sgt i32" <<  var1 << ", " <<  var2;
+}
+
+void llLess(string result, string var1, string var2){
+	out << "	" << result <<  "= icmp slt i32" <<  var1 << ", " <<  var2;
+}
+
+
 /////////////////////////////////////////////////
 
 // it returns the positin of the string. -1 if not found.
@@ -266,8 +290,16 @@ bool condition(string text){
 	outfile << "cond" << while_if_counter << ":" << endl;
 	handleWhileCondition(expression);
 	outfile << "body" << while_if_counter << ":" << endl;
-}
+}	
 
+
+string choose(string expr_cond, string expr_zero, string expr_pos, string expr_neg){
+	string cond = expression(expr_cond)
+
+
+	//condition(cond);
+	return "";
+}
 
 
 int main(){
