@@ -91,7 +91,6 @@ void llDiv(string result_var, string value1, string value2){
 /////////////////////////////////////////////////
 bool isDigit(char c){
  int ASCIcode = int(c);
-
  return (ASCIcode <= 57 && ASCIcode >= 48);
 }
 
@@ -279,38 +278,23 @@ int isassignment(const string& s){
   return -1;
 }
 
-//Deletes the spaces at the beginning and at the end. Don't touch middle!!
-string deleteSpaces(string& s){
-  //s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
-   if(s.empty())
-    return s;
-
-  
-  bool isSeen = false;
-  int first = 0;
-  int last = -1;
-
-  for(int i=0;i<s.length();i++){
-       if(s.at(i) == ' ' || s.at(i) == '\t'){
-           if(!isSeen)
-            first = i + 1;
-       }
-
-     else{
-      isSeen = true;
-      last = i;
-    }
-  }
-  if(!isSeen)
-    return "";
-
-  //outfile << "before deletespaces" << endl;
-  //outfile << first << " " << last << endl;
-  //outfile << s.substr(first,   last - first + 1) << endl;
-  //outfile << "after deletespaces" << endl;
-
-  return s.substr(first, last - first + 1);
+void ltrim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+    s.erase(0, s.find_first_not_of(t));
 }
+
+// trim from right
+void rtrim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+    s.erase(s.find_last_not_of(t) + 1);
+}
+
+void deleteSpaces(std::string& s, const char* t = " \t\n\r\f\v")
+{
+    ltrim(s,t);
+    rtrim(s,t);
+}
+  
 
 //Removes the part where there are comments.
 void deleteComment(string& s){
@@ -401,12 +385,13 @@ int findLastAvailableMultDiv(string s){
 string factor(string text){
 
     if(text.empty()){
+      cout << "found sth empty";
        should_terminate = true;
        return text;
     }
       
-      text = deleteSpaces(text);
-
+      deleteSpaces(text);
+      
   if(isNum(text)){
     return text;
   }
@@ -462,6 +447,7 @@ string factor(string text){
 
       if(!isValidVariableName(text) && cond_variables.find(text) == cond_variables.end()){
         outfile << "candidate var name " << text << endl;
+        cout << text <<  endl;
          should_terminate = true;
        }
 
@@ -485,7 +471,7 @@ string factor(string text){
 
 string term(string text){
 
-   text = deleteSpaces(text);
+   deleteSpaces(text);
 
   int pos = findLastAvailableMultDiv(text);
    
@@ -510,7 +496,7 @@ string term(string text){
 
 string expr(string text){
 
-     text = deleteSpaces(text); //Deletes only the beginning and the end.
+     deleteSpaces(text); //Deletes only the beginning and the end.
      //outfile << "expr after deletion" << endl;
      //outfile << text << endl;
 
@@ -579,14 +565,14 @@ void condition(string text){
 
 
 
-int main(){
+int main(int argc, char const *argv[]){
 
   //This is the input file.
   ifstream infile;
-  infile.open("main5.my");
+  infile.open(argv[1]);
 
   //This will be the output file.
-  outfile.open("main.ll");
+  outfile.open(argv[2]);
 
   outfile << "; ModuleID = 'mylang2ir'\ndeclare i32 @printf(i8*, ...)\n@print.str = constant [4 x i8] c\"%d\\0A\\00\"\n\n";
   outfile << "define i32 @main()   {\n";
@@ -603,7 +589,7 @@ int main(){
 
   for(int i = 0; i < sentences.size(); i++){
     deleteComment(sentences[i]); // First, delete comments
-    sentences[i] = deleteSpaces(sentences[i]); //Second, delete white spaces. at the beginning and the end.
+    deleteSpaces(sentences[i]); //Second, delete white spaces. at the beginning and the end.
   }
 
   for(int i=0;i< sentences.size();i++){
@@ -618,12 +604,12 @@ int main(){
       int operator_pos = isassignment(line);
       string var_name = line.substr(0, operator_pos);
       string expression = line.substr(operator_pos+1, string::npos);
-      var_name = deleteSpaces(var_name);
+      deleteSpaces(var_name);
       assignment(var_name, expression);
 
       if(should_terminate){
-        outfile << "Syntax error at line " << i + 1 << endl;
-        cout << "Syntax error at line " << i  + 1 << endl;
+        outfile << "Line " << i <<": syntax error " << endl;
+        cout << "Line " << i <<": syntax error " << endl;
         return 0;
       }
     }
@@ -634,8 +620,8 @@ int main(){
       string expression = line.substr(bracepst1 + 1, bracepst2 - bracepst1 - 1);
       print(expression);
       if(should_terminate){
-        outfile << "Syntax error at line " << i + 1 << endl;
-        cout << "Syntax error at line " << i  + 1 << endl;
+        outfile << "Line " << i <<": syntax error " << endl;
+        cout << "Line " << i <<": syntax error " << endl;
         return 0;
       }
     }
@@ -651,8 +637,8 @@ int main(){
       is_in_if = true;
       condition(line);
       if(should_terminate){
-        outfile << "Syntax error at line " << i + 1<< endl;
-        cout << "Syntax error at line " << i  + 1 << endl;
+        outfile << "Line " << i <<": syntax error " << endl;
+        cout <<  "Line " << i <<": syntax error " << endl;
         return 0;
       }
     }
@@ -667,8 +653,8 @@ int main(){
       is_in_if = false;
       condition(line);
       if(should_terminate){
-        outfile << "Syntax error at line " << i  + 1 << endl;
-        cout << "Syntax error at line " << i  + 1 << endl;
+        outfile << "Line " << i <<": syntax error "  << endl;
+        cout <<  "Line " << i <<": syntax error "  << endl;
         return 0;
       }
     }
@@ -686,13 +672,12 @@ int main(){
 
 
             if(should_terminate){
-              outfile << "Syntax error at line " << i + 1 << endl;
-              cout << "Syntax error at line " << i + 1 << endl;
+              outfile << "Line " << i <<": syntax error " << endl;
+              cout <<  "Line " << i <<": syntax error " << endl;
               return 0;
              }
 
-                is_in_while = false;
-                is_in_if = false;
+
 
             if(is_in_while){
                 outfile << "    br label %cond" << while_if_counter << endl;
@@ -702,14 +687,25 @@ int main(){
               outfile<< "    br label %end" << while_if_counter << endl;
           }
           outfile << "\n\nend" << while_if_counter++ << ":" << endl;
+
+                is_in_while = false;
+                is_in_if = false;
     }
+            //For unclosed parantheses.
+        
 
   }
-
+    
+if(is_in_while || is_in_if){
+      outfile << "Line " << sentences.size() - 1 <<": syntax error " << endl;
+              cout <<  "Line " << sentences.size() - 1 <<": syntax error " << endl;
+    }
+      
     outfile << "\n ret i32 0\n}" ;
 
     infile.close();
     outfile.close();
+    
 
   return 0;
 }
