@@ -1,2 +1,2 @@
-mylang2ir:		curr.cpp
-				g++ -o mylang2ir curr.cpp
+all:
+	g++ -std=c++14 curr.cpp -o mylang2ir
