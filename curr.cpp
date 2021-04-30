@@ -317,6 +317,19 @@ void deleteComment(string& s){
   }
 }
 
+string printStore(string alloca){
+
+       int index1 = alloca.find('%');
+       int index2 = alloca.find('=');
+       string var_name = alloca.substr(index1 + 1, index2 - index1 - 1);
+       deleteSpaces(var_name);
+
+       string result;
+       result += "store i32 0, i32* %";
+       result += var_name;
+       return result;  
+}
+
 //Returns the expressions in the choose function. expr1,expr2,expr3 and expr4.
 //Nested choose fonksiyonlarını yine parantezle kontrol edebiliyoruz.
 vector<string> findExpressions(string text){
@@ -592,8 +605,8 @@ int main(int argc, char const *argv[]){
 
   outfile.open(outfileName);
 
-  outfile << "; ModuleID = 'mylang2ir'\ndeclare i32 @printf(i8*, ...)\n@print.str = constant [4 x i8] c\"%d\\0A\\00\"\n\n";
-  outfile << "define i32 @main()   {\n";
+  outfile << "; ModuleID = 'mylang2ir'\ndeclare i32 @printf(i8*, ...)\n@print.str = constant [4 x i8] c\"%d\\0A\\00\"" << endl << endl;
+  outfile << "define i32 @main()   {" << endl;;
 
 
   // all lines are put in the vector.
@@ -674,7 +687,7 @@ int main(int argc, char const *argv[]){
       else{
         outfile<< "    br label %end" << while_if_counter << endl;
       }
-    outfile << "\n\nend" << while_if_counter++ << ":" << endl;
+    outfile << endl << endl << "end" << while_if_counter++ << ":" << endl;
 
     is_in_while = false;
     is_in_if = false;
@@ -694,9 +707,13 @@ int main(int argc, char const *argv[]){
         return 0;
     }
         
-  outfile << "\n ret i32 0\n}" ;
+  outfile <<  endl << " ret i32 0" << endl;
+  outfile << "}" << endl;
 
 
+    infile.close();
+    outfile.close();
+    
    // -------This part is for rewriting. -------
 
 
@@ -715,24 +732,30 @@ int main(int argc, char const *argv[]){
     else
       allocateSentences.push_back(sentence);
   }
-  
+
+  infile2.close();
+
   outfile2.open(outfileName);
 
-    for(int i = 0; i < normalSentences.size(); i++){
-      if(i == 5){
-        for(int j = 0 ; j < allocateSentences.size(); j++){
-              outfile2 << allocateSentences[j] << endl;
-              
-        }
-      }
 
-      outfile2 << normalSentences[i] << endl;
+     for(int i = 0; i < normalSentences.size(); i++){
+       if(i == 5){
+        for(int j = 0 ; j < allocateSentences.size(); j++){
+               outfile2 << allocateSentences[j]  << endl;
+              
+         }
+
+        outfile2 << endl;
+
+         for(int j = 0 ; j < allocateSentences.size(); j++){
+              outfile2 << printStore(allocateSentences[j]) << endl;
+         }
+        }
+
+       outfile2 << normalSentences[i] <<  endl;
     }
     
-
-    infile.close();
-    outfile.close();
-    infile2.close();
+    
     outfile2.close();
 
     // -------This part is for rewriting. -------
