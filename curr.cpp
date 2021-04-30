@@ -88,6 +88,20 @@ void llDiv(string result_var, string value1, string value2){
   outfile << "    " << result_var << " = sdiv i32 " << value1 << ", " << value2 << endl;
 }
 
+
+// Creates an llvm code that is printing "Line <linenum>: sytax error" (<linenum> is the given integer)
+void llPrintError(string filename, int linenum){
+  outfile.close();
+  outfile.open(filename);
+
+  outfile << "; ModuleID = 'mylang2ir'\ndeclare i32 @printf(i8*, ...)\n";
+  outfile << "@print.str2 = constant [23 x i8] c\"Line %d: syntax error\\0A\\00\"\n\n";
+  outfile << "define i32 @main()   {\n";
+  outfile << "call i32 (i8*, ...)* @printf(i8* getelementptr ([23 x i8]* @print.str2, i32 0, i32 0),  i32 " << linenum << ")\n";
+  outfile << "ret i32 0\n}";
+
+}
+
 /////////////////////////////////////////////////
 bool isDigit(char c){
  int ASCIcode = int(c);
@@ -606,12 +620,6 @@ int main(int argc, char const *argv[]){
       string expression = line.substr(operator_pos+1, string::npos);
       deleteSpaces(var_name);
       assignment(var_name, expression);
-
-      if(should_terminate){
-        outfile << "Line " << i <<": syntax error " << endl;
-        cout << "Line " << i <<": syntax error " << endl;
-        return 0;
-      }
     }
     //Print line.
     else if(isprint(line)){
@@ -619,11 +627,6 @@ int main(int argc, char const *argv[]){
       int bracepst2 = line.find_last_of(")");
       string expression = line.substr(bracepst1 + 1, bracepst2 - bracepst1 - 1);
       print(expression);
-      if(should_terminate){
-        outfile << "Line " << i <<": syntax error " << endl;
-        cout << "Line " << i <<": syntax error " << endl;
-        return 0;
-      }
     }
 
     else if(isif(line)){
@@ -636,11 +639,6 @@ int main(int argc, char const *argv[]){
       is_in_while = false;
       is_in_if = true;
       condition(line);
-      if(should_terminate){
-        outfile << "Line " << i <<": syntax error " << endl;
-        cout <<  "Line " << i <<": syntax error " << endl;
-        return 0;
-      }
     }
 
     else if(iswhile(line)){
@@ -652,78 +650,69 @@ int main(int argc, char const *argv[]){
       is_in_while = true;
       is_in_if = false;
       condition(line);
-      if(should_terminate){
-        outfile << "Line " << i <<": syntax error "  << endl;
-        cout <<  "Line " << i <<": syntax error "  << endl;
-        return 0;
-      }
     }
 
          /// The only possibility is that "}" End of an if/while block.
     else {
                
-               //Not a curly braces line.
-           if(line != "}")
-            should_terminate = true;
-                
-                //Not in a if/while block.
-            if(!(is_in_while || is_in_if))
-                 should_terminate = true;
+         //Not a curly braces line.
+      if(line != "}")
+        should_terminate = true;
+          
+          //Not in a if/while block.
+      if(!(is_in_while || is_in_if))
+        should_terminate = true;
 
 
-            if(should_terminate){
-              outfile << "Line " << i <<": syntax error " << endl;
-              cout <<  "Line " << i <<": syntax error " << endl;
-              return 0;
-             }
+      if(is_in_while){
+        outfile << "    br label %cond" << while_if_counter << endl;
+      }
+      else{
+        outfile<< "    br label %end" << while_if_counter << endl;
+      }
+    outfile << "\n\nend" << while_if_counter++ << ":" << endl;
 
-
-
-            if(is_in_while){
-                outfile << "    br label %cond" << while_if_counter << endl;
-          }
-
-            else{
-              outfile<< "    br label %end" << while_if_counter << endl;
-          }
-          outfile << "\n\nend" << while_if_counter++ << ":" << endl;
-
-                is_in_while = false;
-                is_in_if = false;
+    is_in_while = false;
+    is_in_if = false;
     }
             //For unclosed parantheses.
-        
 
+
+
+    if(should_terminate){
+        llPrintError(argv[2], i);
+        return 0;
+      }
   }
     
-if(is_in_while || is_in_if){
-      outfile << "Line " << sentences.size() - 1 <<": syntax error " << endl;
-              cout <<  "Line " << sentences.size() - 1 <<": syntax error " << endl;
+  if(is_in_while || is_in_if){
+        llPrintError(argv[2], sentences.size() - 1);
+        return 0;
     }
-      
-    outfile << "\n ret i32 0\n}" ;
+        
+  outfile << "\n ret i32 0\n}" ;
 
 
    // -------This part is for rewriting. -------
 
 
 
-    vector<string> normalSentences;
-    vector<string> allocateSentences;
-    ifstream infile2;
-    ofstream outfile2; 
-    infile2.open(argv[2]);   
-     
-     string sentence;
+  vector<string> normalSentences;
+  vector<string> allocateSentences;
+  ifstream infile2;
+  ofstream outfile2; 
+  infile2.open(argv[2]);   
+   
+   string sentence;
 
-     while (getline(infile2, sentence)){
-      if(sentence.find("alloca") == string::npos)
-         normalSentences.push_back(sentence);
-       else
-        allocateSentences.push_back(sentence);
-    }
-    
-    outfile2.open(argv[2]);
+  while (getline(infile2, sentence)){
+    if(sentence.find("alloca") == string::npos)
+       normalSentences.push_back(sentence);
+    else
+      allocateSentences.push_back(sentence);
+  }
+  
+  outfile2.open(argv[2]);
 
     for(int i = 0; i < normalSentences.size(); i++){
       if(i == 5){
