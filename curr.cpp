@@ -1,4 +1,4 @@
-// This code handles parantheses as well. Also initializes the variable as zero in the expression if it is seen for the first time.
+
 
 #include <bits/stdc++.h>
 #include <iostream>
@@ -9,40 +9,51 @@ using namespace std;
 
 string expr(string text);
 
-///////////////////////////////////These variables are commonly used in most of the below functions
-
-ofstream outfile;
-int tmp_counter = 1;  //Used for creation of temporary variables.
-int cnd_counter = 1;  //Used for creation of conditional variables.
-int while_if_counter = 1; // Used for creation of while/if bodies.
-bool is_in_while = false; //Used for discriminating between while and if bodies, keeps this information in memory.
-bool is_in_if = false; //Used for discriminating between while and if bodies, keeps this information in memory.
-bool should_terminate = false; // Used for determining syntax errors.
-unordered_set<string> variables; // all variable names are put here.
-unordered_set<string> cond_variables; // all conditional variable names are put here.
+////////// There are a bunch of global variables we used in the project. ///////////////
+/////////          GLOBAL VARIABLES      ////////////
 
 
+ofstream outfile;  // It is the output file we use.
+int tmp_counter = 1;  //We use them to create temporary variables. This variable is for indexing each number with different value.
+int cnd_counter = 1;  //Very similar to above, keeps the number of conditional variables in the program. Conditional variables are the variables we create in our program for choose functions.
+int while_if_counter = 1; // Keeps the number of while and if bodies. Increases each time we see an if or while statement.
+bool is_in_while = false; // Keeps the information whether we are currently in a while body or not.
+bool is_in_if = false; //Keeps the information whether we are currently in an if body or not.
+bool should_terminate = false; // This is undoubtedly the most important variable we have. If we see a syntax error, we set its value to true and stop the program as soon as possible.
+unordered_set<string> variables; // All variable names in the program except for internal variables(e.g temporary variables etc.) are put in this set.
+unordered_set<string> cond_variables; // We create some new variables for our program and keep them in this set. We use them when we see a choose function.
 
-// creates a new tmp variable name and returns it
+//////////     GLOBAL VARIABLES ///////////////////////      
+
+
+
+
+
+// creates a new temporary variable name and returns it.
 string createTmpVariable(){
   return "%_" + to_string(tmp_counter++);
 }
 
+//creates a new conditional variable name and returns it.
 string createCndVariable(){
   return "v_" + to_string(cnd_counter++); // This will not be a temporary variable.
 }
 
-////////////////////////////// These functions writes to out file
+/////////////////// ************     ////////////////////////////////////
+
+/////     Below are the utility functions we use for writing to outfile. They are very important for readibility of the code. 
+////      Otherwise code can be get unscalable quite easily. Their job is quite obvious from their bodies.
       
 void llComp(string result, string var1){
     outfile << "    " << result <<  " = icmp eq i32 " <<  var1 << ", 0" << endl;
 }
 
-// reutrns (var1 > var2)
+// Whether (var1 > 0) or not.
 void llGreater(string result, string var1){
     outfile << "    " << result <<  " = icmp sgt i32 " <<  var1 << ", 0" << endl;
 }
 
+// Whether (var1 < 0) or not
 void llLess(string result, string var1){
     outfile << "    " << result <<  " = icmp slt i32 " <<  var1 << ", 0" << endl;
 }
@@ -63,18 +74,15 @@ void llStore(string var_name, string value = "0"){
   outfile << "    store i32 " << value << ", i32* " << var_name << endl << endl;
 }
 
-// var_to is probably the temporary variable
 void llLoad(string var_from, string var_to){
   outfile << "    " << var_to << " = load i32* " << var_from << endl;
 }
 
 
-// Alert!: look there is no "%"  before values
 void llAdd(string result_var, string value1, string value2){
   outfile << "    " << result_var << " = add i32 " << value1 << ", " << value2 << endl;
 }
 
-// result_var = value1 - value2
 void llSub(string result_var, string value1, string value2){
   outfile << "    " << result_var << " = sub i32 " << value1 << ", " << value2 << endl;
 }
@@ -83,13 +91,14 @@ void llMul(string result_var, string value1, string value2){
   outfile << "    " << result_var << " = mul i32 " << value1 << ", " << value2 << endl;
 }
 
-// there are udiv and sdiv. I write udiv belov but we should consider their differences!!
+
 void llDiv(string result_var, string value1, string value2){
   outfile << "    " << result_var << " = sdiv i32 " << value1 << ", " << value2 << endl;
 }
 
 
 // Creates an llvm code that is printing "Line <linenum>: sytax error" (<linenum> is the given integer)
+//This function is called only if we detect a syntax error. Prints the syntax error and its line.
 void llPrintError(string filename, int linenum){
   outfile.close();
   outfile.open(filename);
@@ -102,12 +111,21 @@ void llPrintError(string filename, int linenum){
 
 }
 
-/////////////////////////////////////////////////
+///////////////////           ***************************     ////////////////////////////////////
+
+/////////////////////         ***************************                     ///////////////////////////////////
+
+/////// Below, there are a lot of boolean functions. They are quite simple functions, however crucial for readibility.
+////// Moreover, we understand what we should except from a string thanks to these functions.
+
+
+// If c is one of those:   0 1 2 3 4 5 6 7 8 9, the function returns true.
 bool isDigit(char c){
  int ASCIcode = int(c);
  return (ASCIcode <= 57 && ASCIcode >= 48);
 }
 
+// If the given string can be read as a number then is returns true.
 bool isNum(string text){
 if(text.empty())
   return false;
@@ -119,6 +137,7 @@ for(int i=0;i<text.length();i++){
 return true;
 }
 
+// Whether given letter is in English alphabet or not.
 bool isLetter(char c){
 int ASCIcode = int(c);
 
@@ -291,6 +310,17 @@ int isassignment(const string& s){
 
   return -1;
 }
+
+
+
+/////////////////////         ***************************                     ///////////////////////////////////
+
+
+
+
+
+
+
 
 void ltrim(std::string& s, const char* t = " \t\n\r\f\v")
 {
