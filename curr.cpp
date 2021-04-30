@@ -29,7 +29,7 @@ string createTmpVariable(){
 }
 
 string createCndVariable(){
-  return "v" + to_string(cnd_counter++); // This will not be a temporary variable.
+  return "v_" + to_string(cnd_counter++); // This will not be a temporary variable.
 }
 
 ////////////////////////////// These functions writes to out file
@@ -313,8 +313,8 @@ vector<string> findExpressions(string text){
 
   int bracenum1 = 0;
   int bracenum2 = 0;
-  for(int i=brace1+1; i<text.size(); i++){
-     if(text[i] == '(')
+  for(int i=brace1+1; i<text.size(); i++){         
+     if(text[i] == '(')                             
       bracenum1++;
      if(text[i] == ')')
       bracenum2++;
@@ -382,7 +382,7 @@ int findLastAvailableMultDiv(string s){
 
 ///////////////////////////These functions handles assigments, expressions, mathematical operations,...
 
-string factor(string text){
+string factor(string text){  
 
     if(text.empty()){
       cout << "found sth empty";
@@ -437,7 +437,7 @@ string factor(string text){
       llTypeCast("%" + num1, "%" + cond1);
       llTypeCast("%" + num2, "%" + cond2);
       llTypeCast("%" + num3, "%" + cond3);
-
+                 //v_1*b + v_2*c + v_3*d
       string result = "" + num1 + "*(" + expr1 + ")+" + num2 + "*(" + expr2 + ")+" + num3 + "*(" + expr3 + ")";
       return expr(result);
     }
@@ -496,7 +496,7 @@ string term(string text){
 
 string expr(string text){
 
-     deleteSpaces(text); //Deletes only the beginning and the end.
+     deleteSpaces(text); //Deletes only the beginning and the end.  ( (a  c + )) +     
      //outfile << "expr after deletion" << endl;
      //outfile << text << endl;
 
@@ -601,7 +601,7 @@ int main(int argc, char const *argv[]){
       }
         //Assignment line.
     else if(isassignment(line) != -1){
-      int operator_pos = isassignment(line);
+      int operator_pos = isassignment(line);   
       string var_name = line.substr(0, operator_pos);
       string expression = line.substr(operator_pos+1, string::npos);
       deleteSpaces(var_name);
@@ -703,8 +703,46 @@ if(is_in_while || is_in_if){
       
     outfile << "\n ret i32 0\n}" ;
 
+
+   // -------This part is for rewriting. -------
+
+
+
+    vector<string> normalSentences;
+    vector<string> allocateSentences;
+    ifstream infile2;
+    ofstream outfile2; 
+    infile2.open(argv[2]);   
+     
+     string sentence;
+
+     while (getline(infile2, sentence)){
+      if(sentence.find("alloca") == string::npos)
+         normalSentences.push_back(sentence);
+       else
+        allocateSentences.push_back(sentence);
+    }
+    
+    outfile2.open(argv[2]);
+
+    for(int i = 0; i < normalSentences.size(); i++){
+      if(i == 5){
+        for(int j = 0 ; j < allocateSentences.size(); j++){
+              outfile2 << allocateSentences[j] << endl;
+              
+        }
+      }
+
+      outfile2 << normalSentences[i] << endl;
+    }
+    
+
     infile.close();
     outfile.close();
+    infile2.close();
+    outfile2.close();
+
+    // -------This part is for rewriting. -------
     
 
   return 0;
