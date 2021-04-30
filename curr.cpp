@@ -586,7 +586,11 @@ int main(int argc, char const *argv[]){
   infile.open(argv[1]);
 
   //This will be the output file.
-  outfile.open(argv[2]);
+  string outfileName = argv[1];
+  outfileName = outfileName.substr(0, outfileName.size()-2) + "ll";
+
+
+  outfile.open(outfileName);
 
   outfile << "; ModuleID = 'mylang2ir'\ndeclare i32 @printf(i8*, ...)\n@print.str = constant [4 x i8] c\"%d\\0A\\00\"\n\n";
   outfile << "define i32 @main()   {\n";
@@ -680,13 +684,13 @@ int main(int argc, char const *argv[]){
 
 
     if(should_terminate){
-        llPrintError(argv[2], i);
+        llPrintError(outfileName, i);
         return 0;
       }
   }
     
   if(is_in_while || is_in_if){
-        llPrintError(argv[2], sentences.size() - 1);
+        llPrintError(outfileName, sentences.size() - 1);
         return 0;
     }
         
@@ -701,7 +705,7 @@ int main(int argc, char const *argv[]){
   vector<string> allocateSentences;
   ifstream infile2;
   ofstream outfile2; 
-  infile2.open(argv[2]);   
+  infile2.open(outfileName);   
    
    string sentence;
 
@@ -712,7 +716,7 @@ int main(int argc, char const *argv[]){
       allocateSentences.push_back(sentence);
   }
   
-  outfile2.open(argv[2]);
+  outfile2.open(outfileName);
 
     for(int i = 0; i < normalSentences.size(); i++){
       if(i == 5){
