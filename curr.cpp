@@ -412,7 +412,6 @@ int findLastAvailableMultDiv(string s){
 string factor(string text){  
 
     if(text.empty()){
-      cout << "found sth empty";
        should_terminate = true;
        return text;
     }
@@ -473,8 +472,6 @@ string factor(string text){
     // I now improved i think.
 
       if(!isValidVariableName(text) && cond_variables.find(text) == cond_variables.end()){
-        outfile << "candidate var name " << text << endl;
-        cout << text <<  endl;
          should_terminate = true;
        }
 
