@@ -7,6 +7,8 @@ using namespace std;
 
 string expr(string text);
 
+
+
 ////////// There are a bunch of global variables we used in the project. ///////////////
 /////////          GLOBAL VARIABLES      ////////////
 
@@ -22,7 +24,6 @@ unordered_set<string> variables; // All variable names in the program except for
 unordered_set<string> cond_variables; // We create some new variables for our program and keep them in this set. We use them when we see a choose function.
 
 //////////     GLOBAL VARIABLES ///////////////////////      
-
 
 
 
