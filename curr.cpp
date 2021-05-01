@@ -1,5 +1,3 @@
-
-
 #include <bits/stdc++.h>
 #include <iostream>
 #include <fstream>
@@ -125,7 +123,7 @@ bool isDigit(char c){
  return (ASCIcode <= 57 && ASCIcode >= 48);
 }
 
-// If the given string can be read as a number then is returns true.
+// If the given string can be read as an integer number then it returns true.
 bool isNum(string text){
 if(text.empty())
   return false;
@@ -137,19 +135,22 @@ for(int i=0;i<text.length();i++){
 return true;
 }
 
-// Whether given letter is in English alphabet or not.
+// Whether given letter is in English alphabet or not. [a-zA-Z]
 bool isLetter(char c){
 int ASCIcode = int(c);
 
 return (ASCIcode <= 90 && ASCIcode >= 65) || (ASCIcode <= 122 && ASCIcode >= 97);
 }
 
+// Wheter the given char is alphanumeric. We accept that '_' is not alphanumeric.
 bool isAlphanumeric(char c){
 int ASCIcode = int(c);
 
 return (ASCIcode <= 57 && ASCIcode >= 48) || (ASCIcode <= 90 && ASCIcode >= 65) || (ASCIcode <= 122 && ASCIcode >= 97);
 }
 
+// A valid variable name consists of alphanumeric characters and must start with a letter.
+// It can not be empty or any other keywords of mylang ("if", "while", "print", "choose").
 bool isValidVariableName(string var_name){
    if(var_name.empty())
     return false;
@@ -168,6 +169,7 @@ bool isValidVariableName(string var_name){
    return true; 
 }
 
+// Whether the given expr is a valid choose expression. But this function doesn't check validity of expressions in for.
 bool isChoose(string expr){
     if(expr.length() < 15) //choose () , , , expr1 expr2 expr3 expr4
     return false;
@@ -201,7 +203,8 @@ bool isChoose(string expr){
 
    return true;
 }
-// it returns the positin of the string. -1 if not found.
+
+// Whether the given expr is a valid print expression. But this function doesn't check validity of expression in print.
 bool isprint(const string& s){
     if(s.length() < 8) // print ( ) expr 
     return false;
@@ -235,6 +238,8 @@ bool isprint(const string& s){
 
     return true;
 }
+
+// Whether the given expr is a valid if expression. But this function doesn't check validity of expression in if.
 bool isif(const string& s){
 
   if(s.length() < 6) // if ( ) expr {
@@ -269,8 +274,9 @@ bool isif(const string& s){
     return true;
 }
 
-bool iswhile(const string& s){
 
+// Whether the given expr is a valid while expression. But this function doesn't check validity of expression in while.
+bool iswhile(const string& s){
   if(s.length() < 9) // while ( ) expr {
     return false;
 
@@ -302,11 +308,11 @@ bool iswhile(const string& s){
 
     return true;
 }
-     //We cannot have a "=" sign anywhere else, hence no problem!!
-int isassignment(const string& s){
 
-    if(s.find("=") != string::npos)
-      return s.find("=");
+// Whether the given expr is expected to be an assignment expression. (contains an '=')
+int isassignment(const string& s){
+  if(s.find("=") != string::npos)
+    return s.find("=");
 
   return -1;
 }
@@ -321,47 +327,48 @@ int isassignment(const string& s){
 
 
 
-
+// trims spaces from left of the given string. ex: "   hello  world   " -> "hello  world   "
 void ltrim(std::string& s, const char* t = " \t\n\r\f\v")
 {
-    s.erase(0, s.find_first_not_of(t));
+  s.erase(0, s.find_first_not_of(t));
 }
 
-// trim from right
+// trims spaces from right of the given string. ex: "   hello  world   " -> "   hello  world"
 void rtrim(std::string& s, const char* t = " \t\n\r\f\v")
 {
-    s.erase(s.find_last_not_of(t) + 1);
+   s.erase(s.find_last_not_of(t) + 1);
 }
 
+// trims spaces from left and right of the given string. ex: "   hello  world   " -> "hello  world"
 void deleteSpaces(std::string& s, const char* t = " \t\n\r\f\v")
 {
-    ltrim(s,t);
-    rtrim(s,t);
+  ltrim(s,t);
+  rtrim(s,t);
 }
   
 
 //Removes the part where there are comments.
 void deleteComment(string& s){
   for(int i = 0 ; i < s.length(); i++){
-        if(s[i] == '#')   s = s.substr(0, i);
+    if(s[i] == '#')   s = s.substr(0, i);
   }
 }
 
+// returns a llvm code line which stores 0 in a variable. parameter "alloca" should be in this format: "<any_string>%<var_name>=<any_string>"
 string printStore(string alloca){
+  int index1 = alloca.find('%');
+  int index2 = alloca.find('=');
+  string var_name = alloca.substr(index1 + 1, index2 - index1 - 1);
+  deleteSpaces(var_name);
 
-       int index1 = alloca.find('%');
-       int index2 = alloca.find('=');
-       string var_name = alloca.substr(index1 + 1, index2 - index1 - 1);
-       deleteSpaces(var_name);
-
-       string result;
-       result += "store i32 0, i32* %";
-       result += var_name;
-       return result;  
+  string result;
+  result += "store i32 0, i32* %";
+  result += var_name;
+  return result;  
 }
 
-//Returns the expressions in the choose function. expr1,expr2,expr3 and expr4.
-//Nested choose fonksiyonlarını yine parantezle kontrol edebiliyoruz.
+//Returns a vector of 4 expressions which are exptexted to be in a choose function. returns [expr1, expr2, expr3, expr4].
+//If there is a sytax error then expr4 is definitly an empty string. Others may change.
 vector<string> findExpressions(string text){
   
   int brace1 = text.find("(");
@@ -371,56 +378,56 @@ vector<string> findExpressions(string text){
   int bracenum1 = 0;
   int bracenum2 = 0;
   for(int i=brace1+1; i<text.size(); i++){         
-     if(text[i] == '(')                             
+    if(text[i] == '(')                             
       bracenum1++;
-     if(text[i] == ')')
+    if(text[i] == ')')
       bracenum2++;
-     if(text[i] == ',' && bracenum1 == bracenum2)
-       commaIndexes.push_back(i);
+    if(text[i] == ',' && bracenum1 == bracenum2)
+      commaIndexes.push_back(i);
   }
       
-      if(commaIndexes.size() < 3){
-          should_terminate = true;
-          vector<string> vector;
-          vector.push_back("");
-          vector.push_back("");
-          vector.push_back("");
-          vector.push_back("");
+  if(commaIndexes.size() < 3){
+    should_terminate = true;
+    vector<string> vector;
+    vector.push_back("");
+    vector.push_back("");
+    vector.push_back("");
+    vector.push_back("");
 
-          return vector;
-      }
-    vector<string> result;
-    result.push_back(text.substr(brace1 + 1, commaIndexes[0] - brace1 - 1));
-    result.push_back(text.substr(commaIndexes[0] + 1, commaIndexes[1] - commaIndexes[0] - 1));
-    result.push_back(text.substr(commaIndexes[1] + 1, commaIndexes[2] - commaIndexes[1] - 1));
-    result.push_back(text.substr(commaIndexes[2] + 1, brace2 - commaIndexes[2] - 1));
+    return vector;
+  }
+  vector<string> result;
+  result.push_back(text.substr(brace1 + 1, commaIndexes[0] - brace1 - 1));
+  result.push_back(text.substr(commaIndexes[0] + 1, commaIndexes[1] - commaIndexes[0] - 1));
+  result.push_back(text.substr(commaIndexes[1] + 1, commaIndexes[2] - commaIndexes[1] - 1));
+  result.push_back(text.substr(commaIndexes[2] + 1, brace2 - commaIndexes[2] - 1));
 
-    return result;
+  return result;
  }
 
-       //Parantheses should match, hence we need such a function. We cannot arbitrarily choose the last sign.
-       //Returns the index of the first available sign.
+//Parantheses should match, hence we need such a function. We cannot arbitrarily choose the last sign.
+//Returns the index of the first available sign. Here available means a '+' or '-' sign which is not in a pharanthesized expression.
 int findLastAvailableAddSub(string s){
-  
-   int currBraces1 = 0; // For "("
-   int currBraces2 = 0; // For ")"
+  int currBraces1 = 0; // For "("
+  int currBraces2 = 0; // For ")"
 
-      for(int i = s.length() -1; i >= 0; i--){
-        if(s[i] == '(')
-        currBraces1++;
-        if(s[i] == ')')
-        currBraces2++;
-        if((s[i] == '+' || s[i] == '-') && currBraces1 == currBraces2){
-        return i;
-        }
-     }
+  for(int i = s.length() -1; i >= 0; i--){
+    if(s[i] == '(')
+    currBraces1++;
+    if(s[i] == ')')
+    currBraces2++;
+    if((s[i] == '+' || s[i] == '-') && currBraces1 == currBraces2){
+    return i;
+    }
+  }
 
-   return -1; //Couldn't find a proper match.
+  return -1; //Couldn't find a proper match.
 }
-       //Parantheses should match, hence we need such a function. We cannot arbitrarily choose the last sign.
-      //Returns the index of the first available sign. 
-int findLastAvailableMultDiv(string s){
 
+
+//Parantheses should match, hence we need such a function. We cannot arbitrarily choose the last sign.
+//Returns the index of the first available sign.  Here available means a '*' or '/' sign which is not in a pharanthesized expression.
+int findLastAvailableMultDiv(string s){
   int currBraces1 = 0; // For "("
   int currBraces2 = 0; // For ")"
 
@@ -431,107 +438,112 @@ int findLastAvailableMultDiv(string s){
         currBraces2++;
       if((s[i] == '*' || s[i] == '/') && currBraces1 == currBraces2)
         return i;
-
   }
 
   return -1; // Couldn't find a proper match.
 }
 
+
+
 ///////////////////////////These functions handles assigments, expressions, mathematical operations,...
 
+// This is an abstraction of a factor. <factor> -> <integer> | <choose> | <var> | (<expression)
+// Returns the variable name of the factor or an integer.
 string factor(string text){  
-
-    if(text.empty()){
-       should_terminate = true;
-       return text;
-    }
-      
-      deleteSpaces(text);
+  if(text.empty()){
+     should_terminate = true;
+     return text;
+  }
+    
+  deleteSpaces(text);
       
   if(isNum(text)){
     return text;
   }
   //It is something with parantheses. Handles the parantheses part.
-    else if(text[0] == '(' && text[text.size() - 1] == ')'){
+  else if(text[0] == '(' && text[text.size() - 1] == ')'){
     return expr(text.substr(1,text.size() - 2)); // (expr) -> expr
-    }
-      
-      //Check clearly that its syntax has this form.
-    else if(isChoose(text)){
-      
-      vector<string> expressions = findExpressions(text); // Su anda dogru calisiyor.
-      string expr0 = expressions[0];
-      string expr1 = expressions[1];
-      string expr2 = expressions[2];
-      string expr3 = expressions[3];
-
-
-
-       string s = expr(expr0); // s is the name of the variable which keeps the result of the expr1.
-      string cond1 = createCndVariable(); // They will be the variables v1, v2 etc..
-      string cond2 = createCndVariable(); // Which keeps the boolean information as a i1 variable.
-      string cond3 = createCndVariable();
-      string num1 = createCndVariable(); // They will be the variables v1, v2 etc..
-      string num2 = createCndVariable(); // Which keeps the boolean information as a i32 variable.
-      string num3 = createCndVariable();
-      
-      //variables.insert(cond1); v1
-      //variables.insert(cond2); v2
-      //variables.insert(cond3); v3
-      variables.insert(num1); //v4
-      variables.insert(num2); //v5
-      variables.insert(num3); //v6
-      cond_variables.insert(num1);
-      cond_variables.insert(num2);
-      cond_variables.insert(num3);
-
-
-      llComp("%" + cond1, s);  // result1 is the boolean variable which keeps the information.
-      llGreater("%" + cond2, s);
-      llLess("%" + cond3, s);  
-      
-      llTypeCast("%" + num1, "%" + cond1);
-      llTypeCast("%" + num2, "%" + cond2);
-      llTypeCast("%" + num3, "%" + cond3);
-                 //v_1*b + v_2*c + v_3*d
-      string result = "" + num1 + "*(" + expr1 + ")+" + num2 + "*(" + expr2 + ")+" + num3 + "*(" + expr3 + ")";
-      return expr(result);
-    }
-    else{
-    // Here I assumed that variable exists and it is already declared. We should improve this part later!!!
-    // I now improved i think.
-
-      if(!isValidVariableName(text) && cond_variables.find(text) == cond_variables.end()){
-         should_terminate = true;
-       }
-
-
-      if (variables.find(text) == variables.end()){
-          llAlloca("%" + text);
-          llStore("%" + text, "0");
-          variables.insert(text);
-      }
-      // It means it is not a conditional variable.
-      if(cond_variables.find(text) == cond_variables.end()){
-    string tmp = createTmpVariable();
-    llLoad("%" + text, tmp);
-    return tmp;
   }
-  return "%" + text; //It returns if it is a conditional variable.
+      
+  //Checks whether it is an choose expression.
+  else if(isChoose(text)){
+    
+    vector<string> expressions = findExpressions(text); // expressions of choose. choose(expr0, expr1, expr2, expr3)
+    string expr0 = expressions[0];
+    string expr1 = expressions[1];
+    string expr2 = expressions[2];
+    string expr3 = expressions[3];
+
+
+
+    string s = expr(expr0); // s is the name of the variable which keeps the result of the expr1.
+    string cond1 = createCndVariable(); // They will be the variables v_1, v_2 etc..
+    string cond2 = createCndVariable(); // Which keeps the boolean information as a i1 variable.
+    string cond3 = createCndVariable();
+    string num1 = createCndVariable(); // They will be the variables v_1, v_2 etc..
+    string num2 = createCndVariable(); // Which keeps the boolean information as a i32 variable.
+    string num3 = createCndVariable();
+    
+    variables.insert(num1); //v_4
+    variables.insert(num2); //v_5
+    variables.insert(num3); //v_6
+    cond_variables.insert(num1);
+    cond_variables.insert(num2);
+    cond_variables.insert(num3);
+
+
+
+    llComp("%" + cond1, s); // cond1 is an boolean variable in llvm code which is true if expr==0 (again the comparison is made in llvm code).
+    llGreater("%" + cond2, s); // similar to cond1. But cond2 is true if expr>0
+    llLess("%" + cond3, s);  // similar to cond1. But cond3 is true if expr<0
+    
+    // These creates llvm code to typecast bool values to integers.
+    llTypeCast("%" + num1, "%" + cond1);  //num1 is an integer having the same value with a bool value cond1
+    llTypeCast("%" + num2, "%" + cond2);  //similar
+    llTypeCast("%" + num3, "%" + cond3);  //similar
+    
+    //The idea is that: The value choose returns can be calculated as following:
+    //bool1 = (expr0==0)    bool2 = (expr0>0)   bool3 = (expr0<0)
+    //choose(expr0, expr1, expr2, expr3) = bool1*expr1 + bool2*expr2 + bool3*expr3   //Here actually a type casting is needed from bool to int
+    // We create a mylang expression to calculate this operation. Then we create the llvm code using this mylang line.
+
+    //Here is the maylang code
+    string result = "" + num1 + "*(" + expr1 + ")+" + num2 + "*(" + expr2 + ")+" + num3 + "*(" + expr3 + ")";
+    return expr(result); //This function creates llvm code of this mylang code and resturns the resultant variable name.
+  }
+  else{
+    if(!isValidVariableName(text) && cond_variables.find(text) == cond_variables.end()){
+      //syntax error
+       should_terminate = true;
+     }
+
+    if (variables.find(text) == variables.end()){
+        // if this variable is not allocated yet (it is not in variables set) then allocate it.
+        llAlloca("%" + text);
+        llStore("%" + text, "0");
+        variables.insert(text);
+    }
+    // It means it is not a conditional variable. (a conditional variable is a specific variable which is crucial for choose function)
+    if(cond_variables.find(text) == cond_variables.end()){
+      string tmp = createTmpVariable();
+      llLoad("%" + text, tmp);
+      return tmp;
+    }
+    return "%" + text; //It returns if it is a conditional variable.
   }
 
 }
 
-
+// It is an abstraction of term. <term> -> <factor> | <term>*<factor> | <term>/<factor>
+// returns a temporary variable which is the result of this term.
 string term(string text){
+  deleteSpaces(text); //Make sure there is no space at the beginning and end.
 
-   deleteSpaces(text);
-
-  int pos = findLastAvailableMultDiv(text);
+  int pos = findLastAvailableMultDiv(text); // position of an appropriate '*' or '/'.
    
   //Not found.
     if(pos == -1){ 
-        return factor(text);
+      return factor(text);
     }
 
     string value1 = term(text.substr(0, pos));
@@ -539,7 +551,7 @@ string term(string text){
     string result = createTmpVariable();
 
     if(text[pos] == '*'){
-        llMul(result, value1, value2);
+      llMul(result, value1, value2);
     }
     else if(text[pos] == '/'){
       llDiv(result, value1, value2);
@@ -547,17 +559,16 @@ string term(string text){
     return result;
 }
 
-
+// It is an abstraction of expression. <expr> -> <term> | <expr>+<term> | <expr>-<term>
+// returns a temporary variable which is the result of this expression.
 string expr(string text){
 
-     deleteSpaces(text); //Deletes only the beginning and the end.  ( (a  c + )) +     
-     //outfile << "expr after deletion" << endl;
-     //outfile << text << endl;
+  deleteSpaces(text); //Deletes only the beginning and the end. 
 
-  int pos = findLastAvailableAddSub(text);
+  int pos = findLastAvailableAddSub(text); // position of the nexr appropriate '-' or '+'.
       //Not found
     if(pos == -1){
-        return term(text);
+      return term(text);
     }
 
     string value1 = expr(text.substr(0, pos));
@@ -573,11 +584,11 @@ string expr(string text){
     return result;
 }
 
-// var_name is without %. Returns false if there is a syntax error
+// It is an abstraction of assignment. <asgn> -> <var_name>=<expression>
 void assignment(string var_name, string text){
 
-       if(!isValidVariableName(var_name))
-        should_terminate = true;
+  if(!isValidVariableName(var_name))
+    should_terminate = true;
 
 
   if (variables.find(var_name) == variables.end()){
@@ -587,16 +598,17 @@ void assignment(string var_name, string text){
   }
   string value = expr(text);
   llStore("%" + var_name, value);
-
 }
 
+
+// It is an aabstraction of print statement. <print> -> print(<epxr>)
 void print(string text){
   string value = expr(text);
   llPrint(value);
-
 }
 
- void handleWhileCondition(string text){
+// Creats llvm code to handle condition part of a while loop.
+void handleWhileCondition(string text){
   string value = expr(text); // %t1
   string result = createTmpVariable();
   outfile << "    " << result << " = icmp ne i32 " << value << ", 0" << endl;
@@ -604,7 +616,7 @@ void print(string text){
 
 }
 
-
+// Creats llvm code for a while loop. Condition and body part are both created. But there is nothing yet in the body part.
 void condition(string text){
   int bracepst1 = text.find("(");
   int bracepst2 = text.find_last_of(")");
@@ -620,44 +632,48 @@ void condition(string text){
 
 
 int main(int argc, char const *argv[]){
-
   //This is the input file.
   ifstream infile;
   infile.open(argv[1]);
 
-  //This will be the output file.
+  //This is the name of the output file.
   string outfileName = argv[1];
   outfileName = outfileName.substr(0, outfileName.size()-2) + "ll";
 
-
+  //This is the output file
   outfile.open(outfileName);
 
+
+  // This part is common for our llvm code.
   outfile << "; ModuleID = 'mylang2ir'\ndeclare i32 @printf(i8*, ...)\n@print.str = constant [4 x i8] c\"%d\\0A\\00\"" << endl << endl;
   outfile << "define i32 @main()   {" << endl;;
 
 
-  // all lines are put in the vector.
-  vector<string> sentences;
   
+  vector<string> sentences; // all lines of mylang are put in this vector.
+  
+  string line;
+  while (getline(infile, line)){
+    sentences.push_back(line);
+  }
 
-    string line; //First get all lines.
-    while (getline(infile, line)){
-         sentences.push_back(line);
-    }
-
+  // Preprocess (remove comments and white spaces at the beginning and the end.)
   for(int i = 0; i < sentences.size(); i++){
     deleteComment(sentences[i]); // First, delete comments
     deleteSpaces(sentences[i]); //Second, delete white spaces. at the beginning and the end.
   }
 
+
+  //This is the part iterating line by line and creates llvm code.
   for(int i=0;i< sentences.size();i++){
     string line = sentences[i]; // Line to be processed.
 
-      // Empty line. Works correctly.
+    // Empty line.
     if(line.empty()){
       continue;   
       }
-        //Assignment line.
+    
+    //Assignment line.
     else if(isassignment(line) != -1){
       int operator_pos = isassignment(line);   
       string var_name = line.substr(0, operator_pos);
@@ -665,6 +681,7 @@ int main(int argc, char const *argv[]){
       deleteSpaces(var_name);
       assignment(var_name, expression);
     }
+
     //Print line.
     else if(isprint(line)){
       int bracepst1 = line.find("(");
@@ -673,78 +690,79 @@ int main(int argc, char const *argv[]){
       print(expression);
     }
 
+    //if line
     else if(isif(line)){
-
-          //Nested if/while.
-      if(is_in_while || is_in_if)
-        should_terminate = true;
-
-
+      if(is_in_while || is_in_if)   should_terminate = true; //Nested if/while.
       is_in_while = false;
       is_in_if = true;
       condition(line);
     }
 
+    //while line
     else if(iswhile(line)){
-
-         //Nested if/while.
-       if(is_in_while || is_in_if)
-        should_terminate = true;
-
+      if(is_in_while || is_in_if)    should_terminate = true;  //Nested if/while.
       is_in_while = true;
       is_in_if = false;
       condition(line);
     }
 
-         /// The only possibility is that "}" End of an if/while block.
-    else {
-               
-         //Not a curly braces line.
+    // The only possibility is that "}" End of an if/while block.
+    else {    
+      //Not a curly braces line.
       if(line != "}")
         should_terminate = true;
           
-          //Not in a if/while block.
+      //Not in an if/while block.
       if(!(is_in_while || is_in_if))
         should_terminate = true;
 
-
+      //There is no error and it is "}" of a while.
       if(is_in_while){
         outfile << "    br label %cond" << while_if_counter << endl;
       }
       else{
         outfile<< "    br label %end" << while_if_counter << endl;
       }
-    outfile << endl << endl << "end" << while_if_counter++ << ":" << endl;
+      outfile << endl << endl << "end" << while_if_counter++ << ":" << endl;
 
-    is_in_while = false;
-    is_in_if = false;
+      is_in_while = false;
+      is_in_if = false;
     }
             //For unclosed parantheses.
 
 
-
+    // If the program should terminate (a syntax error is found) then print llvm code which writes the error message
+    // and then exit the program.
     if(should_terminate){
-        llPrintError(outfileName, i);
-        return 0;
-      }
-  }
-    
-  if(is_in_while || is_in_if){
-        llPrintError(outfileName, sentences.size() - 1);
-        return 0;
+      llPrintError(outfileName, i);
+      return 0;
     }
-        
+  }
+   
+
+  // all lines of mylang is read but there is still an '}' missing. Then print llvm code which writes the error message
+  // and then exit the program.
+  if(is_in_while || is_in_if){
+    llPrintError(outfileName, sentences.size() - 1);
+    return 0;
+  }
+  
+
+  // If there is no error in program, these lines are common in all llvm codes which a mylang code would produce.      
   outfile <<  endl << " ret i32 0" << endl;
   outfile << "}" << endl;
 
 
-    infile.close();
-    outfile.close();
-    
-   // -------This part is for rewriting. -------
+  // close the io files.
+  infile.close();
+  outfile.close();
 
 
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // So far in the llvm code which is created, allocation lines may be anywhere of the llvm code. However, all allocation
+  // lines should be at the very beginning of the @main function to prevent multiple allocations of the same variables.
+  // This part changes places of alloction lines and put them at the very beginning of the @main function.
   vector<string> normalSentences;
   vector<string> allocateSentences;
   ifstream infile2;
@@ -785,7 +803,7 @@ int main(int argc, char const *argv[]){
     
     outfile2.close();
 
-    // -------This part is for rewriting. -------
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
 
   return 0;
