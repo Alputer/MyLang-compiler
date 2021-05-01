@@ -115,7 +115,7 @@ void llPrintError(string filename, int linenum){
 /////////////////////         ***************************                     ///////////////////////////////////
 
 /////// Below, there are a lot of boolean functions. They are quite simple functions, however crucial for readibility.
-////// Moreover, we understand what we should except from a string thanks to these functions.
+////// Moreover, we understand what we should expect from a string thanks to these functions.
 
 
 // If c is one of those:   0 1 2 3 4 5 6 7 8 9, the function returns true.
@@ -446,9 +446,9 @@ int findLastAvailableMultDiv(string s){
 
 
 
-///////////////////////////These functions handles assigments, expressions, mathematical operations,...
+///////////////////////////These functions handles assignments, expressions, mathematical operations,...
 
-// This is an abstraction of a factor. <factor> -> <integer> | <choose> | <var> | (<expression)
+// This is an abstraction of a factor. <factor> -> <integer> | <choose> | <var> | (<expression>)
 // Returns the variable name of the factor or an integer.
 string factor(string text){  
   if(text.empty()){
@@ -466,7 +466,7 @@ string factor(string text){
     return expr(text.substr(1,text.size() - 2)); // (expr) -> expr
   }
       
-  //Checks whether it is an choose expression.
+  //Checks whether it is a choose expression.
   else if(isChoose(text)){
     
     vector<string> expressions = findExpressions(text); // expressions of choose. choose(expr0, expr1, expr2, expr3)
